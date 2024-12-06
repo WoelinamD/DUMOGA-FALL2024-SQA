@@ -1,4 +1,4 @@
 # DUMOGA-FALL2024-SQA
 
-Team name: DUMOGA
+Team name: DUMOGA\
 Members: Woelinam Dumoga

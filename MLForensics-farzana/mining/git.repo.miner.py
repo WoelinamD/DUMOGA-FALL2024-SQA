@@ -17,14 +17,28 @@ from xml.parsers.expat import ExpatError
 import time 
 import  datetime 
 import os 
+import logging
+
+logger = None
+def giveMeLoggingObject():
+    global logger
+    if logger == None:
+        format_str = '%(asctime)s:%(message)s'
+        file_name  = 'LOGGER.log'
+        logging.basicConfig(format=format_str, filename=file_name, level=logging.INFO)
+        logger = logging.getLogger('simple-logger')
+    return logger
 
 def deleteRepo(dirName, type_):
     print(':::' + type_ + ':::Deleting ', dirName)
+    logger.info(':::' + type_ + ':::Deleting ', dirName)
     try:
         if os.path.exists(dirName):
             shutil.rmtree(dirName)
+            logger.info(f"{dirName} deleted")
     except OSError:
-        print('Failed deleting, will try manually')        
+        print('Failed deleting, will try manually')
+        logger.info('Failed deleting, will try manually')
 
 
 def makeChunks(the_list, size_):
@@ -32,16 +46,21 @@ def makeChunks(the_list, size_):
         yield the_list[i:i+size_]
 
 def cloneRepo(repo_name, target_dir):
-    cmd_ = "git clone " + repo_name + " " + target_dir 
+    cmd_ = "git clone " + repo_name + " " + target_dir
+    logger.info(f"cloning {repo_name} to {target_dir}")
     try:
-       subprocess.check_output(['bash','-c', cmd_])    
+       subprocess.check_output(['bash','-c', cmd_])
+       logger.info("repo cloned")
     except subprocess.CalledProcessError:
        print('Skipping this repo ... trouble cloning repo:', repo_name )
+       logger.info('Skipping this repo ... trouble cloning repo:', repo_name )
 
 def dumpContentIntoFile(strP, fileP):
+    logger.info(f"dumping {strP} into {fileP}")
     fileToWrite = open( fileP, 'w')
     fileToWrite.write(strP )
     fileToWrite.close()
+    logger.info("dumped")
     return str(os.stat(fileP).st_size)
 
 def getPythonCount(path2dir): 
@@ -83,7 +102,8 @@ def getMLStats(repo_path):
     repo_statLs = []
     repo_count  = 0 
     all_repos = [f.path for f in os.scandir(repo_path) if f.is_dir()]
-    print('REPO_COUNT:', len(all_repos) )    
+    print('REPO_COUNT:', len(all_repos) )
+    logger.info(f"getMLStats REPO_COUNT = {len(all_repos)}")
     for repo_ in all_repos:
         repo_count += 1 
         ml_lib_cnt = getMLLibraryUsage( repo_ ) 
@@ -119,6 +139,7 @@ def deleteRepos():
     repos    = np.unique( repos_df['REPO'].tolist() ) 
     for x_ in repos:
         deleteRepo( x_, 'ML_LIBRARY_THRESHOLD' )
+        logger.info(f"deleted repo {x_}")
 
 if __name__=='__main__':
     # repos_df = pd.read_csv('PARTIAL_REMAINING_GITHUB.csv')
@@ -128,6 +149,7 @@ if __name__=='__main__':
     # ## need to create chunks as too many repos 
     # chunked_list = list(makeChunks(list_, 100))  ### list of lists, at each batch download 100 repos 
     # cloneRepos(chunked_list)
+    giveMeLoggingObject()
 
 
 
