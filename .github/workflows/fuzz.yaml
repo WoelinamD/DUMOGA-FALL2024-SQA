@@ -1,0 +1,14 @@
+name: Fuzz
+
+on:
+  push: {}
+
+jobs:
+  fuzz_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run fuzz
+        run: python fuzz.py
